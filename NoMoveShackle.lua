@@ -14,8 +14,8 @@ local movementBindings = {
     "MOVEBACKWARD",
     "STRAFELEFT",
     "STRAFERIGHT",
-	"TOGGLEAUTORUN",
-	"CAMERAORSELECTORMOVE"
+    "TOGGLEAUTORUN",
+    "CAMERAORSELECTORMOVE"
 }
 
 local function IsInAllowedZone()
