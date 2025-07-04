@@ -7,6 +7,16 @@ local ZONES_WHITELIST = {
 }
 
 local keysDisabled = false
+local savedBindings = {}
+
+local movementBindings = {
+    "MOVEFORWARD",
+    "MOVEBACKWARD",
+    "STRAFELEFT",
+    "STRAFERIGHT",
+	"TOGGLEAUTORUN",
+	"CAMERAORSELECTORMOVE"
+}
 
 local function IsInAllowedZone()
     local zone = GetSubZoneText()
@@ -14,35 +24,26 @@ local function IsInAllowedZone()
 end
 
 local function DisableMovementKeys()
-    SetBinding("BUTTON1", "NONE");
-    SetBinding("W", "NONE")
-    SetBinding("A", "NONE")
-    SetBinding("S", "NONE")
-    SetBinding("D", "NONE")
-    SetBinding("Q", "NONE")
-    SetBinding("E", "NONE")
-    SetBinding("UP", "NONE")
-    SetBinding("DOWN", "NONE")
-    SetBinding("LEFT", "NONE")
-    SetBinding("RIGHT", "NONE")
+    savedBindings = {}
+
+    for _, action in ipairs(movementBindings) do
+        local key1, key2 = GetBindingKey(action)
+        savedBindings[action] = {key1, key2}
+        if key1 then SetBinding(key1, "NONE") end
+        if key2 then SetBinding(key2, "NONE") end
+    end
 
     keysDisabled = true
     DEFAULT_CHAT_FRAME:AddMessage("NoMove: Movement keys disabled!")
 end
 
 local function RestoreMovementKeys()
-    SetBinding("BUTTON1","CAMERAORSELECTORMOVE");
-    SetBinding("W", "MOVEFORWARD")
-    SetBinding("A", "TURNLEFT")
-    SetBinding("S", "MOVEBACKWARD")
-    SetBinding("D", "TURNRIGHT")
-    SetBinding("Q", "STRAFELEFT")
-    SetBinding("E", "STRAFERIGHT")
-    SetBinding("UP", "MOVEFORWARD")
-    SetBinding("DOWN", "MOVEBACKWARD")
-    SetBinding("LEFT", "TURNLEFT")
-    SetBinding("RIGHT", "TURNRIGHT")
+    for action, keys in pairs(savedBindings) do
+        if keys[1] then SetBinding(keys[1], action) end
+        if keys[2] then SetBinding(keys[2], action) end
+    end
 
+    savedBindings = {}
     keysDisabled = false
     DEFAULT_CHAT_FRAME:AddMessage("NoMove: Movement keys restored!")
 end
@@ -66,8 +67,17 @@ local function CheckDebuff()
     end
 end
 
+NoMoveFrame:RegisterEvent("CHAT_MSG_RAID_BOSS_EMOTE")
+NoMoveFrame:RegisterEvent("CHAT_MSG_MONSTER_EMOTE")
 NoMoveFrame:RegisterEvent("PLAYER_AURAS_CHANGED")
 NoMoveFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 NoMoveFrame:SetScript("OnEvent", function()
-    CheckDebuff()
+    if event == "PLAYER_AURAS_CHANGED" or event == "PLAYER_ENTERING_WORLD" then
+        CheckDebuff()
+
+    elseif event == "CHAT_MSG_RAID_BOSS_EMOTE" or event == "CHAT_MSG_MONSTER_EMOTE" then
+        if arg1 and string.find(string.lower(arg1), "shackles of the legion") then
+            DEFAULT_CHAT_FRAME:AddMessage("NoMove: Please release left mouse button and other movement keys.")
+        end
+    end
 end)
