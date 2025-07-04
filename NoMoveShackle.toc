@@ -1,0 +1,4 @@
+## Interface: 11200
+## Title: NoMoveShackle
+## Notes: Disables movement keys when you have Shackles of the Legion
+NoMoveShackle.lua
